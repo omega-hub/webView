@@ -46,7 +46,7 @@ public:
 	static WebView* create(int width, int height)
 	{ return WebCore::instance()->createView(width, height); }
 
-	WebView(Awesomium::WebView* internalView, int width, int height);
+	WebView(WebCore* core, Awesomium::WebView* internalView, int width, int height);
 	virtual ~WebView();
 	void resize(int width, int height);
 	void update();
@@ -60,6 +60,7 @@ public:
 	{ return myView; }
 
 private:
+	Ref<WebCore> myCore;
 	Awesomium::WebView* myView;
 	int myWidth;
 	int myHeight;
@@ -130,7 +131,10 @@ WebCore::WebCore()
 ///////////////////////////////////////////////////////////////////////////////
 WebCore::~WebCore()
 {
-	Awesomium::WebCore::Shutdown();
+	// NOTE: WebCore::Shutdown() crashes for some unknown reason. Leaving this
+	// commented will cause a leak, but hopefully we are doing this during app
+	// shutdown, so it's not too bad.
+	//Awesomium::WebCore::Shutdown();
 	myCore = NULL;
 	mysInstance = NULL;
 }
@@ -139,7 +143,7 @@ WebCore::~WebCore()
 WebView* WebCore::createView(int width, int height)
 {
 	Awesomium::WebView* internalView = myCore->CreateWebView(width, height);
-	WebView* view = new WebView(internalView, width, height);
+	WebView* view = new WebView(this, internalView, width, height);
 	myViews.push_back(view);
 	return view;
 }
@@ -162,8 +166,9 @@ void WebCore::update(const UpdateContext& context)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-WebView::WebView(Awesomium::WebView* internalView, int width, int height):
+WebView::WebView(WebCore* core, Awesomium::WebView* internalView, int width, int height):
 PixelData(PixelData::FormatRgba, width, height, 0),
+	myCore(core),
 	myView(internalView),
 	myWidth(width),
 	myHeight(height)
@@ -175,7 +180,6 @@ PixelData(PixelData::FormatRgba, width, height, 0),
 WebView::~WebView()
 {
 	WebCore::instance()->destroyView(this);
-	myView->Destroy();
 	myView = NULL;
 }
 
