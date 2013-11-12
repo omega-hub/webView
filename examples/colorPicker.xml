@@ -1,0 +1,22 @@
+<gui>
+  <elements>
+    <element id="color_ctrl" type="HTML">
+      <div id="merdolo" class="div-aligned">
+          <input type="button" data-role="button" onmousedown="print('dio merda')" data-shadow="false" data-inline="true" data-corner="false" data-continuous="false" value="Drainage" />
+        <input id="color_label" name="color_label" value="#000000" data-role="none" data-inline="true" onchange="onColorChanged('%color_label.value%');"/>
+        <div id="color_picker" data-role="none" data-inline="true" ></div>
+      </div>
+    </element>
+  </elements>
+  
+  <interfaces>
+	<interface minWidth="0" minHeight="0" id="small">
+	  <portrait layout="vertical">
+		<element width="100%" height="100%" id="color_ctrl"/>
+	  </portrait>
+	  <landscape layout="horizontal">
+		<element width="100%" height="100%" id="color_ctrl"/>
+	  </landscape>
+	</interface>
+  </interfaces>
+</gui>
