@@ -38,20 +38,21 @@ elseif(APPLE)
 #--------------------------------------
 # Setup Awesomium in Linux (32 and 64bit)
 elseif(CMAKE_COMPILER_IS_GNUCXX)
-	if(CMAKE_CL_64)
+	# if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		# set(AWESOMIUM_TGZ ${CMAKE_SOURCE_DIR}/modules/webView/Awesomium-linux32.tar.gz)
+		# set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.2_sdk_linux32)
+	# else()
 		set(AWESOMIUM_TGZ ${CMAKE_SOURCE_DIR}/modules/webView/Awesomium-linux64.tar.gz)
 		set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.2_sdk_linux64)
-	elseif(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-		set(AWESOMIUM_TGZ ${CMAKE_SOURCE_DIR}/modules/webView/Awesomium-linux32.tar.gz)
-		set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.2_sdk_linux32)
-	endif()
+#	endif()
 	
 	execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf
 		${AWESOMIUM_TGZ} WORKING_DIRECTORY ${WEBVIEW_BIN_DIR})
 	# Copy binary files to the omegalib bin directories.
 	set(AWESOMIUM_BIN_DIR ${AWESOMIUM_DIR}/bin)
 	set(AWESOMIUM_BIN_FILES 
-		awesomium_process)
+		awesomium_process
+		libawesomium-1-7.so.2.0)
 	foreach( F ${AWESOMIUM_BIN_FILES} )
 		configure_file(${AWESOMIUM_BIN_DIR}/${F} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
 	endforeach()
