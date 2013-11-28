@@ -4,6 +4,10 @@ set(MODULE_NAME webView)
 # Extract and setup the Awesomium library
 set(WEBVIEW_BIN_DIR ${CMAKE_BINARY_DIR}/modules/webView)
 
+# Set module name and source files here
+add_library(${MODULE_NAME} MODULE 
+	webView.cpp)
+
 #--------------------------------------
 # Setup Awesomium in windows
 if(WIN32)
@@ -60,13 +64,16 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
 	# Set variables needed to use awesomium
 	set(AWESOMIUM_INCLUDE_DIR ${AWESOMIUM_DIR}/include)
 	set(AWESOMIUM_LIBRARY ${AWESOMIUM_DIR}/bin/libawesomium-1-7.so.2.0)
+    
+    # add a symbolic link to awesomium 2.0 (needed at runtime, or apps will
+    # not find the library
+    add_custom_command(
+        TARGET webView POST_BUILD
+        COMMAND ln -sf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.2.0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.2
+    )
 endif()
 
 include_directories(${AWESOMIUM_INCLUDE_DIR})
-
-# Set module name and source files here
-add_library(${MODULE_NAME} MODULE 
-	webView.cpp)
 
 # Set the module library dependencies here
 target_link_libraries(${MODULE_NAME}
