@@ -80,6 +80,8 @@ target_link_libraries(${MODULE_NAME}
 	omega omegaToolkit ${AWESOMIUM_LIBRARY})
 
 #install(FILES ./rift.cfg DESTINATION omegalib/rift)
+install(DIRECTORY examples/ DESTINATION omegalib/examples/webView)
+install(FILES browser.py DESTINATION omegalib/modules/webView)
 
 #------------------------------------------------------------------------------
 # DO NOT MODIFY ANYTHING BELOW AFTER THIS LINE
