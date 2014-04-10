@@ -223,10 +223,17 @@ void WebView::update()
     Awesomium::BitmapSurface* surface = static_cast<Awesomium::BitmapSurface*>(myView->surface());
     if(surface && surface->is_dirty())
     {
-        unsigned char* ptr = map();
-        surface->CopyTo(ptr, myWidth * 4, 4, true, true);
-        unmap();
-        setDirty();
+        // Due to threading, webview surface size an pixeldata size may be
+        // temporarily out of sync. Check size here to make sure you are not 
+        // trashing memory.
+        if(surface->width() == myWidth &&
+            surface->height() == myHeight)
+        {
+            unsigned char* ptr = map();
+            surface->CopyTo(ptr, myWidth * 4, 4, true, true);
+            unmap();
+            setDirty();
+        }
     }
 }
 
@@ -314,7 +321,8 @@ void WebFrame::update(const omega::UpdateContext& context)
         if(myView->getHeight() != getHeight() ||
             myView->getWidth() != getWidth())
         {
-            setSize(Vector2f(myView->getWidth(), myView->getHeight()));
+            myView->resize(getWidth(), getHeight());
+            //setSize(Vector2f(myView->getWidth(), myView->getHeight()));
         }
     }
 }

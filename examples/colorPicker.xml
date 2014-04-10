@@ -10,7 +10,7 @@
   </elements>
   
   <interfaces>
-	<interface minWidth="0" minHeight="0" id="small">
+	<interface minWidth="0" minHeight="0" id="default">
 	  <portrait layout="vertical">
 		<element width="100%" height="100%" id="color_ctrl"/>
 	  </portrait>

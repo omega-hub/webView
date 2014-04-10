@@ -17,7 +17,7 @@ l1.setColor(Color('white'))
 l1.setPosition(-1, 2, 0)
 
 def onColorChanged(colorString):
-	box.getMaterial().setColor(Color(colorString), Color('black'))
+    box.getMaterial().setColor(Color(colorString), Color('black'))
 
 # Spin the box!
 def onUpdate(frame, t, dt):
@@ -32,7 +32,7 @@ bw = None
 def createWebUi():
 	global bw
 	# create a webView to show the porthole interface.
-	width = 840
+	width = 240
 	height = 240
 
 	ui = UiModule.createAndInitialize()
