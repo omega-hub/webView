@@ -82,6 +82,10 @@ public:
     WebView* getView() 
     { return myView; }
 
+protected:
+    virtual void activate();
+    virtual void deactivate();
+
 private:
     Ref<WebView> myView;
 };
@@ -280,6 +284,7 @@ WebFrame* WebFrame::create(Container* container)
 WebFrame::WebFrame(Engine* srv):
     Image(srv)
 {
+    setEnabled(true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -290,8 +295,31 @@ void WebFrame::setView(WebView* view)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void WebFrame::activate()
+{
+    myView->getInternalView()->Focus();
+    const Color& fc = getFactory()->getFocusColor();
+    for(int i = 0; i < 4; i++)
+    {
+        getBorderStyle(i).width = 20;
+        getBorderStyle(i).color = fc;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void WebFrame::deactivate()
+{
+    myView->getInternalView()->Unfocus();
+    for(int i = 0; i < 4; i++)
+    {
+        getBorderStyle(i).width = 0;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void WebFrame::handleEvent(const omega::Event& evt)
 {
+    Image::handleEvent(evt);
     if(myView != NULL)
     {
         if(isPointerInteractionEnabled())
