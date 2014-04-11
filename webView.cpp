@@ -34,6 +34,7 @@ private:
     static WebCore* mysInstance;
 
     Awesomium::WebCore* myCore;
+    Awesomium::WebSession* mySession;
     List<WebView*> myViews;
 };
 
@@ -142,12 +143,24 @@ WebCore* WebCore::instance()
 ///////////////////////////////////////////////////////////////////////////////
 WebCore::WebCore()
 {
-    myCore = Awesomium::WebCore::Initialize( Awesomium::WebConfig() );
+    Awesomium::WebConfig wc;
+    wchar_t* wstr = L"--use - gl = desktop";
+    Awesomium::WebString opt((wchar16*)wstr);
+    wc.additional_options.Push(opt);
+    myCore = Awesomium::WebCore::Initialize(wc);
+
+    Awesomium::WebPreferences wp;
+    wp.enable_web_gl = true;
+    wp.enable_gpu_acceleration = true;
+    mySession = myCore->CreateWebSession(Awesomium::WebString((wchar16*)(L"")), wp);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 WebCore::~WebCore()
 {
+    mySession->Release();
+    mySession = NULL;
+
     // NOTE: WebCore::Shutdown() crashes for some unknown reason. Leaving this
     // commented will cause a leak, but hopefully we are doing this during app
     // shutdown, so it's not too bad.
@@ -159,7 +172,7 @@ WebCore::~WebCore()
 ///////////////////////////////////////////////////////////////////////////////
 WebView* WebCore::createView(int width, int height)
 {
-    Awesomium::WebView* internalView = myCore->CreateWebView(width, height);
+    Awesomium::WebView* internalView = myCore->CreateWebView(width, height, mySession);
     WebView* view = new WebView(this, internalView, width, height);
     myViews.push_back(view);
     return view;
@@ -305,6 +318,41 @@ void WebFrame::handleEvent(const omega::Event& evt)
                         EventSharingModule::markLocal(evt);
                     }
                 }
+            }
+        }
+        if(evt.getServiceType() == Service::Keyboard)
+        {
+            if(isActive())
+            {
+                Awesomium::WebView* w = myView->getInternalView();
+                Awesomium::WebKeyboardEvent wke;
+
+                char c;
+                if(evt.getChar(&c))
+                {
+
+                    if(evt.getType() == Event::Down)
+                    {
+                        wke.type = Awesomium::WebKeyboardEvent::kTypeChar;
+                        wke.text[0] = c;
+                        wke.text[1] = 0;
+                        w->InjectKeyboardEvent(wke);
+                        evt.setProcessed();
+                    }
+                }
+                else
+                {
+                    if(evt.getType() == Event::Down) wke.type = Awesomium::WebKeyboardEvent::kTypeKeyDown;
+                    if(evt.getType() == Event::Up) wke.type = Awesomium::WebKeyboardEvent::kTypeKeyUp;
+                    int keys = 0;
+                    if(evt.isFlagSet(Event::ButtonLeft)) wke.virtual_key_code = Awesomium::KeyCodes::AK_LEFT;
+                    if(evt.isFlagSet(Event::ButtonUp)) wke.virtual_key_code = Awesomium::KeyCodes::AK_UP;
+                    if(evt.isFlagSet(Event::ButtonDown)) wke.virtual_key_code = Awesomium::KeyCodes::AK_DOWN;
+                    if(evt.isFlagSet(Event::ButtonRight)) wke.virtual_key_code = Awesomium::KeyCodes::AK_RIGHT;
+                    if(evt.isFlagSet(Event::Backspace)) wke.virtual_key_code = Awesomium::KeyCodes::AK_BACK;
+                    w->InjectKeyboardEvent(wke);
+                }
+                //else if(evt.getType() == Event::Up) wke.type = Awesomium::WebKeyboardEvent::kTypeKeyUp;
             }
         }
     }

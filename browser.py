@@ -14,8 +14,10 @@ class BrowserWindow():
     width = 0
     height = 0
     id = "browserWindow"
+    parent = None
     
     def __init__(self, id, container, width, height):
+        self.parent = container
         self.width = width
         self.height = height
         self.id = id
@@ -28,6 +30,8 @@ class BrowserWindow():
         self.container.setFillEnabled(True)
         self.container.setAutosize(True)
         self.container.setMargin(0)
+        # the + 50 is needed to set the right size of the web view (based on scaler size)
+        self.container.setSize(Vector2(width + 50, height + 50))
         
         self.titleBar = Container.create(ContainerLayout.LayoutHorizontal, self.container)
         #self.titleBar.setPinned(True)
@@ -52,6 +56,17 @@ class BrowserWindow():
         self.urlbox.setSizeAnchorEnabled(True)
         self.urlbox.setSizeAnchor(Vector2(0, -1))
         self.urlbox.setUIEventCommand('browsers["{0}"].loadUrl("%value%")'.format(id))
+
+        self.close = Button.create(self.titleBar)
+        self.close.setText('X')
+        self.close.setStyleValue('align', 'middle-right')
+        self.close.setUIEventCommand('browsers["{0}"].dispose()'.format(id))
+        
+        scaler = Container.create(ContainerLayout.LayoutFree, self.container)
+        scaler.setDraggable(True)
+        scaler.setAutosize(False)
+        scaler.setPosition(Vector2(width,height))
+        scaler.setSize(Vector2(50,50))
         
         if(isMaster()):
             self.view = WebView.create(width, height)
@@ -65,11 +80,13 @@ class BrowserWindow():
             # self.frame.setData(self.view)
             
         self.frame.setPosition(Vector2(5, 32))
+        self.container.requestLayoutRefresh()
         
         #ImageBroadcastModule.instance().addChannel(self.view, id, ImageFormat.FormatJpeg)
     
-    def dispose():
-        del browsers[id]
+    def dispose(self):
+        self.parent.removeChild(self.container)
+        del browsers[self.id]
     
     def setDraggable(self, draggable):
         self.draggable = draggable
