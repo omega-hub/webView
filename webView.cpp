@@ -122,7 +122,8 @@ BOOST_PYTHON_MODULE(webView)
         PyObject* browserModuleCode = Py_CompileString(browserModuleSrc.c_str(), "browser", Py_file_input);
         if(browserModuleCode != NULL)
         {
-            sBrowserModule = PyImport_ExecCodeModule("browser", browserModuleCode);
+            const char* moduleName = "browser";
+            sBrowserModule = PyImport_ExecCodeModule((char*)moduleName, browserModuleCode);
         }
     }
     else
@@ -148,7 +149,7 @@ WebCore* WebCore::instance()
 WebCore::WebCore()
 {
     Awesomium::WebConfig wc;
-    wchar_t* wstr = L"--use - gl = desktop";
+    const wchar_t* wstr = L"--use - gl = desktop";
     Awesomium::WebString opt((wchar16*)wstr);
     wc.additional_options.Push(opt);
     myCore = Awesomium::WebCore::Initialize(wc);
@@ -324,7 +325,7 @@ void WebFrame::handleEvent(const omega::Event& evt)
     {
         if(isPointerInteractionEnabled())
         {
-            if(evt.getServiceType() == Event::ServiceTypePointer || evt.getServiceType() == Event::ServiceTypeWand)
+            if(evt.getServiceType() == Service::Pointer || evt.getServiceType() == Service::Wand)
             {
                 Vector2f point  = Vector2f(evt.getPosition().x(), evt.getPosition().y());
                 point = transformPoint(point);
