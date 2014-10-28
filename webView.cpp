@@ -338,13 +338,17 @@ void WebFrame::handleEvent(const omega::Event& evt)
                     {
                         w->InjectMouseDown(Awesomium::kMouseButton_Left);
                         evt.setProcessed();
-                        EventSharingModule::markLocal(evt);
+                        // Marking local makes events not work on distributed
+                        // webframes..
+                        //EventSharingModule::markLocal(evt);
                     }
                     else if(evt.isButtonUp(UiModule::getClickButton())) // Need to check buton up like this because mouse service takes away button flag on up button events.
                     {
                         w->InjectMouseUp(Awesomium::kMouseButton_Left);
                         evt.setProcessed();
-                        EventSharingModule::markLocal(evt);
+                        // Marking local makes events not work on distributed
+                        // webframes..
+                        //EventSharingModule::markLocal(evt);
                     }
                 }
             }
