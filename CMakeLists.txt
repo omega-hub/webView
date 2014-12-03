@@ -83,9 +83,4 @@ target_link_libraries(${MODULE_NAME}
 install(DIRECTORY examples/ DESTINATION omegalib/examples/webView)
 install(FILES browser.py DESTINATION omegalib/modules/webView)
 
-#------------------------------------------------------------------------------
-# DO NOT MODIFY ANYTHING BELOW AFTER THIS LINE
-set_target_properties(${MODULE_NAME} PROPERTIES PREFIX "")
-if(WIN32)
-	set_target_properties(${MODULE_NAME} PROPERTIES FOLDER modules SUFFIX ".pyd")
-endif()
+declare_native_module(${MODULE_NAME})
