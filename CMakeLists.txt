@@ -1,12 +1,8 @@
-# Set the module name here
-set(MODULE_NAME webView)
-
 # Extract and setup the Awesomium library
 set(WEBVIEW_BIN_DIR ${CMAKE_BINARY_DIR}/modules/webView)
 
 # Set module name and source files here
-add_library(${MODULE_NAME} MODULE 
-	webView.cpp)
+add_library(webView MODULE webView.cpp)
 
 #--------------------------------------
 # Setup Awesomium in windows
@@ -76,11 +72,10 @@ endif()
 include_directories(${AWESOMIUM_INCLUDE_DIR})
 
 # Set the module library dependencies here
-target_link_libraries(${MODULE_NAME}
-	omega omegaToolkit ${AWESOMIUM_LIBRARY})
+target_link_libraries(webView omega omegaToolkit ${AWESOMIUM_LIBRARY})
 
 #install(FILES ./rift.cfg DESTINATION omegalib/rift)
 install(DIRECTORY examples/ DESTINATION omegalib/examples/webView)
 install(FILES browser.py DESTINATION omegalib/modules/webView)
 
-declare_native_module(${MODULE_NAME})
+declare_native_module(webView)
