@@ -2,7 +2,14 @@
 set(WEBVIEW_BIN_DIR ${CMAKE_BINARY_DIR}/modules/webView)
 
 # Set module name and source files here
-add_library(webView MODULE webView.cpp)
+add_library(webView MODULE 
+    webView.cpp 
+    ClassicWebCore.cpp
+    ClassicWebCore.h
+    LocalDataSource.cpp
+    LocalDataSource.h
+    TileWebCore.cpp
+    TileWebCore.h)
 
 #--------------------------------------
 # Setup Awesomium in windows

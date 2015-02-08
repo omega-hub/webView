@@ -4,8 +4,8 @@ from cyclops import *
 from webView import *
 from browser import *
 
-width = 400
-height = 400
+width = 1200
+height = 800
 
 mm = MenuManager.createAndInitialize()
 mnu = mm.getMainMenu()
@@ -19,5 +19,5 @@ def addTab():
     uiroot = ui.getUi()
     bw = BrowserWindow('browser{0}'.format(numBrowsers), uiroot, width, height)
     numBrowsers = numBrowsers + 1
-    bw.loadUrl("http://www.google.com")
+    bw.loadUrl("https://stemkoski.github.io/Three.js/HelloWorld.html")
     bw.setDraggable(True)
