@@ -4,4 +4,5 @@ from webView import *
 ww = None
 
 twc = TileWebCore.instance()
-twc.loadUrl('asset://local/hello.html')	
+twc.loadUrl('asset://local/omegaThreejs/examples/demo.html')	
+#twc.loadUrl('asset://local/webView/examples/hello.html')	

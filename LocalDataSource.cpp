@@ -11,12 +11,7 @@ void LocalDataSource::OnRequest(int request_id, const Awesomium::WebString &url)
 {
     DataManager* dm = SystemManager::instance()->getDataManager();
     
-    // Convert url to String
-    char* cpath = new char[url.length() + 1];
-    url.ToUTF8(cpath, url.length());
-    cpath[url.length()] = '\0';
-    String path(cpath);
-    delete cpath;
+    String path = ToString(url);
 
     // Find extension to deduct mime type
     String filename;

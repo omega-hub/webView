@@ -1,8 +1,42 @@
 <html>
 <body>
-    <h1>Hello World</h1>
+    <h1 id="title">Hello World</h1>
+    <div id="info">info</div>
+    <div id="tile">tile</div>
+    <div id="ttl">ttl</div>
+    <div id="camera">camera</div>
+    <script src="asset://local/webView/js/omega.js"></script>
+    
     <script type="text/javascript">
-        document.write("You are running Awesomium " + awesomium.version);
+        function setText(elem, text) {
+            document.getElementById(elem).innerHTML = text;
+        }
+        
+        function frame() {
+            setText("title", 
+                "Hello from Omegalib " + omega.version);
+            
+            setText("info", 
+                "Frame " + omega.frame + 
+                " Time " + omega.time.toFixed(2) + 
+                "  dt " + omega.dt.toFixed(3));
+                
+            setText("tile", 
+                "Tile X " + omega.activeCanvasRect[0] + 
+                " Y " + omega.activeCanvasRect[1] + 
+                " W " + omega.activeCanvasRect[2] + 
+                " H " + omega.activeCanvasRect[3]);
+                
+            setText("ttl", 
+                "Tile Top Left " + omega.tileTopLeft[0] + 
+                ", " + omega.tileTopLeft[1] + 
+                ", " + omega.tileTopLeft[2]);
+                
+            setText("camera", 
+                "Camera X " + omega.cameraPosition[0].toFixed(2) + 
+                " Y " + omega.cameraPosition[1].toFixed(2) + 
+                " Z " + omega.cameraPosition[2].toFixed(2));
+        }
     </script>
 </body>
 </html>
