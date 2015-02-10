@@ -6,8 +6,16 @@
 
 using namespace omega;
 
+// Needed to fix build on linux:
+// http://answers.awesomium.com/questions/4205/linux-undefined-reference-to-typeinfo-for-awesomiu.html
+#ifdef __linux__
+    Awesomium::DataSource::~DataSource()
+    {
+    }
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
-void LocalDataSource::OnRequest(int request_id, const Awesomium::WebString &url)
+void LocalDataSource::OnRequest(int request_id, const Awesomium::ResourceRequest& request, const Awesomium::WebString &url)
 {
     DataManager* dm = SystemManager::instance()->getDataManager();
     
@@ -29,7 +37,7 @@ void LocalDataSource::OnRequest(int request_id, const Awesomium::WebString &url)
     String fullpath;
     if(DataManager::findFile(path, fullpath))
     {
-        std::ifstream file(fullpath, std::ios::binary);
+        std::ifstream file(fullpath.c_str(), std::ios::binary);
         file.seekg(0, std::ios::end);
         std::streamsize size = file.tellg();
         file.seekg(0, std::ios::beg);

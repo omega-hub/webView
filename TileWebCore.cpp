@@ -2,20 +2,20 @@
 
 #include <omega/glheaders.h>
 
-TileWebCore* sInstance = NULL;
+TileWebCore* stwcInstance = NULL;
 
 using namespace Awesomium;
 
 ///////////////////////////////////////////////////////////////////////////////
 TileWebCore* TileWebCore::instance()
 {
-    if(!sInstance)
+    if(!stwcInstance)
     {
-        sInstance = new TileWebCore();
-        ModuleServices::addModule(sInstance);
-        sInstance->doInitialize(Engine::instance());
+        stwcInstance = new TileWebCore();
+        ModuleServices::addModule(stwcInstance);
+        stwcInstance->doInitialize(Engine::instance());
     }
-    return sInstance;
+    return stwcInstance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ TileWebCore::~TileWebCore()
     // shutdown, so it's not too bad.
     //Awesomium::WebCore::Shutdown();
     myCore = NULL;
-    sInstance = NULL;
+    stwcInstance = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ void TileWebCore::handleEvent(const Event& evt)
             w->InjectMouseMove(pos[0], pos[1]);
 
             struct ButtonMap { Event::Flags obtn; MouseButton abtn; };
-
+            /*
             static ButtonMap btnmap[] = {
                 Event::Left, kMouseButton_Left,
                 //Event::Middle, kMouseButton_Middle,
@@ -102,7 +102,7 @@ void TileWebCore::handleEvent(const Event& evt)
                     w->InjectMouseUp(bm.abtn);
                     //evt.setProcessed();
                 }
-            }
+            }*/
         }
     }
 }
@@ -293,6 +293,7 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
             Vector2i vpsize = context.viewport.size();
             if(vpsize != viewSize)
             {
+                ofmsg("RESIZE %1% %2%", %vpsize[0] %vpsize[1]);
                 myView->Resize(vpsize[0], vpsize[1]);
             }
             else
@@ -322,6 +323,10 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
         // Draw
         if(myTexture)
         {
+            ofmsg("draw %1% %2% %3% %4%", 
+                %context.tile->offset[0] %context.tile->offset[1]
+                %myTexture->getWidth() %myTexture->getHeight());
+                
             DrawInterface* di = context.renderer->getRenderer();
             di->beginDraw2D(context);
             di->drawRectTexture(

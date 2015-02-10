@@ -50,7 +50,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
 		# set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.2_sdk_linux32)
 	# else()
 		set(AWESOMIUM_TGZ ${CMAKE_SOURCE_DIR}/modules/webView/Awesomium-linux64.tar.gz)
-		set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.2_sdk_linux64)
+		set(AWESOMIUM_DIR ${WEBVIEW_BIN_DIR}/awesomium_v1.7.5_sdk_linux64)
 #	endif()
 	
 	execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf
@@ -59,20 +59,21 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
 	set(AWESOMIUM_BIN_DIR ${AWESOMIUM_DIR}/bin)
 	set(AWESOMIUM_BIN_FILES 
 		awesomium_process
-		libawesomium-1-7.so.2.0)
+		libawesomium-1-7.so.5.0
+        libffmpegsumo.so)
 	foreach( F ${AWESOMIUM_BIN_FILES} )
 		configure_file(${AWESOMIUM_BIN_DIR}/${F} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
 	endforeach()
 	
 	# Set variables needed to use awesomium
 	set(AWESOMIUM_INCLUDE_DIR ${AWESOMIUM_DIR}/include)
-	set(AWESOMIUM_LIBRARY ${AWESOMIUM_DIR}/bin/libawesomium-1-7.so.2.0)
+	set(AWESOMIUM_LIBRARY ${AWESOMIUM_DIR}/bin/libawesomium-1-7.so.5.0)
     
     # add a symbolic link to awesomium 2.0 (needed at runtime, or apps will
     # not find the library
     add_custom_command(
         TARGET webView POST_BUILD
-        COMMAND ln -sf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.2.0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.2
+        COMMAND ln -sf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.5.0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libawesomium-1-7.so.5
     )
 endif()
 

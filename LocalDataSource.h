@@ -8,6 +8,6 @@
 class LocalDataSource: public Awesomium::DataSource
 {
 public:
-    virtual void OnRequest(int request_id, const Awesomium::WebString &path);
+    virtual void OnRequest(int request_id, const Awesomium::ResourceRequest& request, const Awesomium::WebString &path);
 };
 #endif
