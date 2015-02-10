@@ -6,8 +6,6 @@ TileWebCore* sInstance = NULL;
 
 using namespace Awesomium;
 
-Lock l;
-
 ///////////////////////////////////////////////////////////////////////////////
 TileWebCore* TileWebCore::instance()
 {
@@ -31,7 +29,7 @@ TileWebCore::TileWebCore()
 
     WebPreferences wp;
     wp.enable_web_gl = true;
-    wp.enable_gpu_acceleration = true;
+    //wp.enable_gpu_acceleration = true;
     mySession = myCore->CreateWebSession(WebString((wchar16*)(L"")), wp);
 
     // Register the local data source with this session.
@@ -59,13 +57,15 @@ TileWebCore::~TileWebCore()
 ///////////////////////////////////////////////////////////////////////////////
 void TileWebCore::update(const UpdateContext& context)
 {
-    l.lock();
-    foreach(TileWebRenderPass* rp, myRenderPasses)
-    {
-        rp->updateOmegaContext(context);
-    }
     myCore->Update();
-    l.unlock();
+
+    if(context.time > 10)
+    {
+        foreach(TileWebRenderPass* rp, myRenderPasses)
+        {
+            rp->updateOmegaContext(context);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,6 +114,7 @@ void TileWebCore::initializeRenderer(Renderer* r)
     // render
     WebView* v = myCore->CreateWebView(100, 100, mySession);
     v->set_view_listener(this);
+    v->set_process_listener(this);
     TileWebRenderPass* twrp = new TileWebRenderPass(r, v);
     r->addRenderPass(twrp);
     myRenderPasses.push_back(twrp);
@@ -140,51 +141,38 @@ void TileWebCore::loadUrl(const String& url)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeTitle(Awesomium::WebView *caller, const Awesomium::WebString &title)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeAddressBar(Awesomium::WebView *caller, const Awesomium::WebURL &url)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeTooltip(Awesomium::WebView *caller, const Awesomium::WebString &tooltip)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeTargetURL(Awesomium::WebView *caller, const Awesomium::WebURL &url)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeCursor(Awesomium::WebView *caller, Awesomium::Cursor cursor)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnChangeFocus(Awesomium::WebView *caller, Awesomium::FocusedElementType focused_type)
-{
-}
-
-////////////////////////////////////////////////////////////////////////////////
 void TileWebCore::OnAddConsoleMessage(Awesomium::WebView *caller, const Awesomium::WebString &message, int line_number, const Awesomium::WebString &source)
 {
     ofmsg("%1%(%2%): %3%", %ToString(source) % line_number %ToString(message));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TileWebCore::OnShowCreatedWebView(Awesomium::WebView *caller, Awesomium::WebView *new_view, const Awesomium::WebURL &opener_url, const Awesomium::WebURL &target_url, const Awesomium::Rect &initial_pos, bool is_popup)
+void TileWebCore::OnUnresponsive(Awesomium::WebView *caller)
 {
+    owarn("Webview UNRESPONSIVE");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void TileWebCore::OnResponsive(Awesomium::WebView *caller)
+{
+    owarn("Webview RESPONSIVE");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void TileWebCore::OnCrashed(Awesomium::WebView *caller, Awesomium::TerminationStatus status)
+{
+    owarn("Webview CRASH");
+    foreach(TileWebRenderPass* twrp, myRenderPasses) twrp->myInitialized = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TileWebRenderPass::TileWebRenderPass(Renderer* client, WebView* view) :
     RenderPass(client, "TileWebRenderPass"),
     myView(view),
-    myTexture(NULL)
+    myTexture(NULL),
+    myLastWebFrame(0),
+    myMaxFrameInterval(10),
+    myInitialized(false)
 {
     createOmegaContext();
 }
@@ -197,8 +185,7 @@ void TileWebRenderPass::dispose()
 ///////////////////////////////////////////////////////////////////////////////
 void TileWebRenderPass::createOmegaContext()
 {
-    myOmegaContextV = myView->CreateGlobalJavascriptObject(WSLit("omega"));
-    myOmegaContext = myOmegaContextV.ToObject();
+    myOmegaContext = JSObject();
     myOmegaContext.SetProperty(WSLit("version"), WSLit(OMEGA_VERSION));
 }
 
@@ -225,11 +212,11 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         jsacr.Push(JSValue(acr.width()));
         jsacr.Push(JSValue(acr.height()));
 
-        myOmegaContext.SetPropertyAsync(WSLit("activeCanvasRect"), jsacr);
-        myOmegaContext.SetPropertyAsync(WSLit("cameraPosition"), Vector3fToJSArray(context.camera->getPosition()));
-        myOmegaContext.SetPropertyAsync(WSLit("tileTopLeft"), Vector3fToJSArray(context.tile->topLeft));
-        myOmegaContext.SetPropertyAsync(WSLit("tileBottomLeft"), Vector3fToJSArray(context.tile->bottomLeft));
-        myOmegaContext.SetPropertyAsync(WSLit("tileBottomRight"), Vector3fToJSArray(context.tile->bottomRight));
+        myOmegaContext.SetProperty(WSLit("activeCanvasRect"), jsacr);
+        myOmegaContext.SetProperty(WSLit("cameraPosition"), Vector3fToJSArray(context.camera->getPosition()));
+        myOmegaContext.SetProperty(WSLit("tileTopLeft"), Vector3fToJSArray(context.tile->topLeft));
+        myOmegaContext.SetProperty(WSLit("tileBottomLeft"), Vector3fToJSArray(context.tile->bottomLeft));
+        myOmegaContext.SetProperty(WSLit("tileBottomRight"), Vector3fToJSArray(context.tile->bottomRight));
     }
     else if(context.task == DrawContext::SceneDrawTask)
     {
@@ -251,18 +238,18 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         }
         if(context.eye == DrawContext::EyeCyclop)
         {
-            myOmegaContext.SetPropertyAsync(WSLit("modelview"), modelview);
-            myOmegaContext.SetPropertyAsync(WSLit("projection"), projection);
+            myOmegaContext.SetProperty(WSLit("modelview"), modelview);
+            myOmegaContext.SetProperty(WSLit("projection"), projection);
         }
         else if(context.eye == DrawContext::EyeRight)
         {
-            myOmegaContext.SetPropertyAsync(WSLit("modelviewRight"), modelview);
-            myOmegaContext.SetPropertyAsync(WSLit("projectionRight"), projection);
+            myOmegaContext.SetProperty(WSLit("modelviewRight"), modelview);
+            myOmegaContext.SetProperty(WSLit("projectionRight"), projection);
         }
         else if(context.eye == DrawContext::EyeLeft)
         {
-            myOmegaContext.SetPropertyAsync(WSLit("modelviewLeft"), modelview);
-            myOmegaContext.SetPropertyAsync(WSLit("projectionLeft"), projection);
+            myOmegaContext.SetProperty(WSLit("modelviewLeft"), modelview);
+            myOmegaContext.SetProperty(WSLit("projectionLeft"), projection);
         }
     }
 }
@@ -270,17 +257,31 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
 ///////////////////////////////////////////////////////////////////////////////
 void TileWebRenderPass::updateOmegaContext(const UpdateContext& context)
 {
-    myOmegaContext.SetPropertyAsync(WSLit("frame"), JSValue((int)context.frameNum));
-    myOmegaContext.SetPropertyAsync(WSLit("time"), JSValue(context.time));
-    myOmegaContext.SetPropertyAsync(WSLit("dt"), JSValue(context.dt));
+    myOmegaContext.SetProperty(WSLit("frame"), JSValue((int)context.frameNum));
+    myOmegaContext.SetProperty(WSLit("time"), JSValue(context.time));
+    myOmegaContext.SetProperty(WSLit("dt"), JSValue(context.dt));
+
+    if(context.frameNum - myLastWebFrame > myMaxFrameInterval)
+    {
+        myLastWebFrame = context.frameNum;
+
+        if(!myInitialized)
+        {
+            bool c = myView->IsCrashed();
+            myWindow = myView->ExecuteJavascriptWithResult(WSLit("window"), WSLit(""));
+            myInitialized = true;
+        }
+
+        JSArray args;
+        args.Push(myOmegaContext);
+
+        myWindow.ToObject().Invoke(WSLit("frame"), args);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
 {
-    l.lock();
-    //ofmsg("refc %1%", %myOmegaContext.ref_count());
-
     if(context.task == DrawContext::OverlayDrawTask && 
         context.eye == DrawContext::EyeCyclop)
     {
@@ -301,7 +302,6 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
                    surface->width() == vpsize[0] &&
                    surface->height() == vpsize[1])
                 {
-                    updateOmegaContext(context);
                     // Let's initialize the texture if we need to.
                     if(myTexture == NULL)
                     {
@@ -313,6 +313,8 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
                     int h = surface->height();
                     myTexture->writeRawPixels(surface->buffer(), vpsize[0], vpsize[1], GL_BGRA);
                     surface->set_is_dirty(false);
+                    myLastWebFrame = 0;
+                    updateOmegaContext(context);
                 }
             }
         }
@@ -331,12 +333,6 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
     }
     else if(context.task == DrawContext::SceneDrawTask)
     {
-        //Awesomium::BitmapSurface* surface = static_cast<Awesomium::BitmapSurface*>(myView->surface());
-        //Vector2i vpsize = context.viewport.size();
-        //if(surface && surface->width() == vpsize[0] && surface->height() == vpsize[1])
-        {
-            updateOmegaContext(context);
-        }
+        updateOmegaContext(context);
     }
-    l.unlock();
 }

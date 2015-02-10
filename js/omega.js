@@ -11,10 +11,10 @@ requestAnimFrame = (function () {
         callback();
     };
 })();
-  
+
 ////////////////////////////////////////////////////////////////////////////////
 function frameLoop() {
-    console.log("frame " + omega.frame)
+    console.log("frame " + __omega.frame)
     if(typeof omega !== "undefined" && omega.frame > 5)
     {
         frame();
@@ -22,4 +22,4 @@ function frameLoop() {
     requestAnimFrame(frameLoop);
 }
 
-requestAnimFrame(frameLoop);
+//requestAnimFrame(frameLoop);
