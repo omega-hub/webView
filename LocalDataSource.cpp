@@ -48,5 +48,9 @@ void LocalDataSource::OnRequest(int request_id, const Awesomium::ResourceRequest
             SendResponse(request_id, size, (unsigned char*)buffer.data(), Awesomium::WSLit(mime.c_str()));
         }
     }
+    else
+    {
+        ofwarn("LocalDataSource::OnRequest: file not found: %1%", %path);
+    }
     
 }

@@ -59,12 +59,9 @@ void TileWebCore::update(const UpdateContext& context)
 {
     myCore->Update();
 
-    if(context.time > 10)
+    foreach(TileWebRenderPass* rp, myRenderPasses)
     {
-        foreach(TileWebRenderPass* rp, myRenderPasses)
-        {
-            rp->updateOmegaContext(context);
-        }
+        rp->updateOmegaContext(context);
     }
 }
 
@@ -236,12 +233,10 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
             modelview.Push(JSValue(at(j, i)));
             projection.Push(JSValue(context.projection(j, i)));
         }
-        if(context.eye == DrawContext::EyeCyclop)
-        {
-            myOmegaContext.SetProperty(WSLit("modelview"), modelview);
-            myOmegaContext.SetProperty(WSLit("projection"), projection);
-        }
-        else if(context.eye == DrawContext::EyeRight)
+        myOmegaContext.SetProperty(WSLit("modelview"), modelview);
+        myOmegaContext.SetProperty(WSLit("projection"), projection);
+
+        if(context.eye == DrawContext::EyeRight)
         {
             myOmegaContext.SetProperty(WSLit("modelviewRight"), modelview);
             myOmegaContext.SetProperty(WSLit("projectionRight"), projection);
@@ -293,7 +288,6 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
             Vector2i vpsize = context.viewport.size();
             if(vpsize != viewSize)
             {
-                ofmsg("RESIZE %1% %2%", %vpsize[0] %vpsize[1]);
                 myView->Resize(vpsize[0], vpsize[1]);
             }
             else
@@ -323,12 +317,9 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
         // Draw
         if(myTexture)
         {
-            ofmsg("draw %1% %2% %3% %4%", 
-                %context.tile->offset[0] %context.tile->offset[1]
-                %myTexture->getWidth() %myTexture->getHeight());
-                
             DrawInterface* di = context.renderer->getRenderer();
             di->beginDraw2D(context);
+            glColor4f(1,1,1,1);
             di->drawRectTexture(
                 myTexture,
                 Vector2f(context.tile->offset[0], context.tile->offset[1]),
