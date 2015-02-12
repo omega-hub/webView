@@ -216,6 +216,12 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         myOmegaContext.SetProperty(WSLit("tileTopLeft"), Vector3fToJSArray(context.tile->topLeft));
         myOmegaContext.SetProperty(WSLit("tileBottomLeft"), Vector3fToJSArray(context.tile->bottomLeft));
         myOmegaContext.SetProperty(WSLit("tileBottomRight"), Vector3fToJSArray(context.tile->bottomRight));
+
+        // Pass the stereo mode
+        int stereoMode = (int)(context.tile->stereoMode != DisplayTileConfig::Default ?
+            context.tile->stereoMode :
+            context.tile->displayConfig.stereoMode);
+        myOmegaContext.SetProperty(WSLit("stereoMode"), JSValue(stereoMode));
     }
     else if(context.task == DrawContext::SceneDrawTask)
     {
