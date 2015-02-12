@@ -29,6 +29,8 @@ TileWebCore::TileWebCore()
 
     WebPreferences wp;
     wp.enable_web_gl = true;
+    // Allow cross-domain requests
+    wp.enable_web_security = false;
     //wp.enable_gpu_acceleration = true;
     mySession = myCore->CreateWebSession(WebString((wchar16*)(L"")), wp);
 
@@ -313,8 +315,14 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
                 }
             }
         }
-
+    }
+    else if(context.task == DrawContext::SceneDrawTask)
+    {
+        updateOmegaContext(context);
         // Draw
+        // NOTE: drawing in one frame behind wrt web page rendering
+        // We should put the page rendering here as well, either in the cyclops
+        // eye for mono or first eye (left) for stereo.
         if(myTexture)
         {
             DrawInterface* di = context.renderer->getRenderer();
@@ -326,9 +334,5 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
                 Vector2f(myTexture->getWidth(), myTexture->getHeight()), DrawInterface::FlipY);
             di->endDraw();
         }
-    }
-    else if(context.task == DrawContext::SceneDrawTask)
-    {
-        updateOmegaContext(context);
     }
 }
