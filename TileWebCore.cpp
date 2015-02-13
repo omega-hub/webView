@@ -211,7 +211,15 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         jsacr.Push(JSValue(acr.width()));
         jsacr.Push(JSValue(acr.height()));
 
+        omicron::Rect& ar = context.tile->activeRect;
+        JSArray jsar;
+        jsar.Push(JSValue(ar.x()));
+        jsar.Push(JSValue(ar.y()));
+        jsar.Push(JSValue(ar.width()));
+        jsar.Push(JSValue(ar.height()));
+
         myOmegaContext.SetProperty(WSLit("activeCanvasRect"), jsacr);
+        myOmegaContext.SetProperty(WSLit("activeRect"), jsar);
         myOmegaContext.SetProperty(WSLit("cameraPosition"), Vector3fToJSArray(context.camera->getPosition()));
         myOmegaContext.SetProperty(WSLit("tileTopLeft"), Vector3fToJSArray(context.tile->topLeft));
         myOmegaContext.SetProperty(WSLit("tileBottomLeft"), Vector3fToJSArray(context.tile->bottomLeft));
@@ -224,7 +232,6 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         
         if(context.tile->displayConfig.forceMono) stereoMode = DisplayTileConfig::Mono;
             
-        ofmsg("Stereo mode: %1%", %stereoMode);
         myOmegaContext.SetProperty(WSLit("stereoMode"), JSValue(stereoMode));
     }
     else if(context.task == DrawContext::SceneDrawTask)
@@ -268,7 +275,7 @@ void TileWebRenderPass::updateOmegaContext(const UpdateContext& context)
     myOmegaContext.SetProperty(WSLit("time"), JSValue(context.time));
     myOmegaContext.SetProperty(WSLit("dt"), JSValue(context.dt));
 
-    if(context.frameNum - myLastWebFrame > myMaxFrameInterval)
+    //if(context.frameNum - myLastWebFrame > myMaxFrameInterval)
     {
         myLastWebFrame = context.frameNum;
 
@@ -335,12 +342,16 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
         // eye for mono or first eye (left) for stereo.
         if(myTexture)
         {
+            const DisplayTileConfig* tile = context.tile;
+            float cx = tile->activeCanvasRect.min[0];
+            float cy = tile->activeCanvasRect.min[1];
+            
             DrawInterface* di = context.renderer->getRenderer();
             di->beginDraw2D(context);
             glColor4f(1,1,1,1);
             di->drawRectTexture(
                 myTexture,
-                Vector2f(context.tile->offset[0], context.tile->offset[1]),
+                Vector2f(cx, cy),
                 Vector2f(myTexture->getWidth(), myTexture->getHeight()), DrawInterface::FlipY);
             di->endDraw();
         }
