@@ -221,6 +221,10 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         int stereoMode = (int)(context.tile->stereoMode != DisplayTileConfig::Default ?
             context.tile->stereoMode :
             context.tile->displayConfig.stereoMode);
+        
+        if(context.tile->displayConfig.forceMono) stereoMode = DisplayTileConfig::Mono;
+            
+        ofmsg("Stereo mode: %1%", %stereoMode);
         myOmegaContext.SetProperty(WSLit("stereoMode"), JSValue(stereoMode));
     }
     else if(context.task == DrawContext::SceneDrawTask)
