@@ -21,6 +21,9 @@ TileWebCore* TileWebCore::instance()
 ///////////////////////////////////////////////////////////////////////////////
 TileWebCore::TileWebCore()
 {
+    // We are the last ones processing input (after UI & menu system)
+    setPriority(EngineModule::PriorityLowest);
+
     WebConfig wc;
     WebString opt(WSLit("--use-gl=desktop"));
     wc.additional_options.Push(opt);
@@ -82,26 +85,26 @@ void TileWebCore::handleEvent(const Event& evt)
             w->InjectMouseMove(pos[0], pos[1]);
 
             struct ButtonMap { Event::Flags obtn; MouseButton abtn; };
-            /*
             static ButtonMap btnmap[] = {
                 Event::Left, kMouseButton_Left,
-                //Event::Middle, kMouseButton_Middle,
+                Event::Middle, kMouseButton_Middle,
                 Event::Right, kMouseButton_Right,
             };
 
-            foreach(ButtonMap& bm, btnmap)
+            for(int i = 0; i < 3; i++)
             {
+                ButtonMap& bm = btnmap[i];
                 if(evt.isButtonDown(bm.obtn))
                 {
                     w->InjectMouseDown(bm.abtn);
-                    //evt.setProcessed();
+                    evt.setProcessed();
                 }
                 else if(evt.isButtonUp(bm.obtn))
                 {
                     w->InjectMouseUp(bm.abtn);
-                    //evt.setProcessed();
+                    evt.setProcessed();
                 }
-            }*/
+            }
         }
     }
 }
