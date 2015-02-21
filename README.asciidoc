@@ -28,7 +28,7 @@ following fields.
 |=========================
 |**Field**|**Description**
 |`activeCanvasRect`|
-Array with 4 values with active canvas rect
+Array with 4 values with active canvas rect.
 
 |`cameraPosition`|
 3 value array with x,y,z position fo default omegalib camera.
