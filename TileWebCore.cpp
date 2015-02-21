@@ -1,5 +1,7 @@
 #include "TileWebCore.h"
 
+#include<Awesomium/STLHelpers.h>
+
 #include <omega/glheaders.h>
 
 TileWebCore* stwcInstance = NULL;
@@ -117,6 +119,11 @@ void TileWebCore::initializeRenderer(Renderer* r)
     WebView* v = myCore->CreateWebView(100, 100, mySession);
     v->set_view_listener(this);
     v->set_process_listener(this);
+    // We are going to handle the js callbacks from the omegalib / js API
+    // The API is initialized in TileWebRenderPass::createOmegaContext
+    v->set_js_method_handler(this);
+
+
     TileWebRenderPass* twrp = new TileWebRenderPass(r, v);
     r->addRenderPass(twrp);
     myRenderPasses.push_back(twrp);
@@ -168,15 +175,41 @@ void TileWebCore::OnCrashed(Awesomium::WebView *caller, Awesomium::TerminationSt
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void TileWebCore::OnMethodCall(WebView *caller, unsigned int remote_object_id, const WebString &method_name, const JSArray &args)
+{
+    if(method_name == WSLit("setFrameFunction"))
+    {
+        String f = ToString(args[0].ToString());
+        foreach(TileWebRenderPass* twrp, myRenderPasses)
+        {
+            if(twrp->getInternalView() == caller) twrp->setFrameFunction(f);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+JSValue TileWebCore::OnMethodCallWithReturnValue(WebView *caller, unsigned int remote_object_id, const WebString &method_name, const JSArray &args)
+{
+    return JSValue();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TileWebRenderPass::TileWebRenderPass(Renderer* client, WebView* view) :
     RenderPass(client, "TileWebRenderPass"),
     myView(view),
     myTexture(NULL),
     myLastWebFrame(0),
     myMaxFrameInterval(10),
-    myInitialized(false)
+    myInitialized(false),
+    myFrameFunction(WSLit("frame"))
 {
     createOmegaContext();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void TileWebRenderPass::setFrameFunction(const String frameFunction)
+{
+    myFrameFunction = ToWebString(frameFunction);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,6 +222,10 @@ void TileWebRenderPass::createOmegaContext()
 {
     myOmegaContext = JSObject();
     myOmegaContext.SetProperty(WSLit("version"), WSLit(OMEGA_VERSION));
+
+    // Create the omegalib / javascript API object
+    myOmegaAPIObject = myView->CreateGlobalJavascriptObject(WSLit("OMEGA")).ToObject();
+    myOmegaAPIObject.SetCustomMethod(WSLit("setFrameFunction"), false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,7 +329,7 @@ void TileWebRenderPass::updateOmegaContext(const UpdateContext& context)
         JSArray args;
         args.Push(myOmegaContext);
 
-        myWindow.ToObject().Invoke(WSLit("frame"), args);
+        myWindow.ToObject().Invoke(myFrameFunction, args);
     }
 }
 

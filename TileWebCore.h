@@ -25,7 +25,8 @@ class TileWebRenderPass;
 // accesses this directly.
 class TileWebCore : public EngineModule, 
                     public Awesomium::WebViewListener::View,
-                    public Awesomium::WebViewListener::Process
+                    public Awesomium::WebViewListener::Process,
+                    public Awesomium::JSMethodHandler
 {
 public:
     static TileWebCore* instance();
@@ -52,6 +53,9 @@ public:
     virtual void 	OnUnresponsive(Awesomium::WebView *caller);
     virtual void 	OnResponsive(Awesomium::WebView *caller);
     virtual void 	OnCrashed(Awesomium::WebView *caller, Awesomium::TerminationStatus status);
+    // JSMethodHandler overrides
+    virtual void 	OnMethodCall(Awesomium::WebView *caller, unsigned int remote_object_id, const Awesomium::WebString &method_name, const Awesomium::JSArray &args);
+    virtual Awesomium::JSValue 	OnMethodCallWithReturnValue(Awesomium::WebView *caller, unsigned int remote_object_id, const Awesomium::WebString &method_name, const Awesomium::JSArray &args);
 
 private:
     Awesomium::WebCore* myCore;
@@ -81,11 +85,15 @@ public:
     //! Updates the omegalib javascript context with update context data.
     void updateOmegaContext(const UpdateContext& context);
 
+    //! Set the frame function name
+    void setFrameFunction(const String frameFunction);
+
 private:
     Awesomium::WebView* myView;
     Awesomium::JSValue myWindow;
     Awesomium::JSObject myOmegaContext;
-    Awesomium::JSValue myOmegaContextV;
+    Awesomium::JSObject myOmegaAPIObject;
+    Awesomium::WebString myFrameFunction;
     Ref<Texture> myTexture;
     uint64 myLastWebFrame;
     uint64 myMaxFrameInterval;

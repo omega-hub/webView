@@ -11,7 +11,9 @@
             document.getElementById(elem).innerHTML = text;
         }
         
-        function frame(omega) {
+        OMEGA.setFrameFunction("update");
+        
+        function update(omega) {
             setText("title", 
                 "Hello from Omegalib " + omega.version);
             
