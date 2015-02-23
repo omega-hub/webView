@@ -177,7 +177,13 @@ void TileWebCore::OnCrashed(Awesomium::WebView *caller, Awesomium::TerminationSt
 ////////////////////////////////////////////////////////////////////////////////
 void TileWebCore::OnMethodCall(WebView *caller, unsigned int remote_object_id, const WebString &method_name, const JSArray &args)
 {
-    if(method_name == WSLit("setFrameFunction"))
+    if(method_name == WSLit("queueCommand"))
+    {
+        String f = ToString(args[0].ToString());
+        PythonInterpreter* pi = SystemManager::instance()->getScriptInterpreter();
+        pi->queueCommand(f);
+    }
+    else if(method_name == WSLit("setFrameFunction"))
     {
         String f = ToString(args[0].ToString());
         foreach(TileWebRenderPass* twrp, myRenderPasses)
@@ -225,6 +231,7 @@ void TileWebRenderPass::createOmegaContext()
 
     // Create the omegalib / javascript API object
     myOmegaAPIObject = myView->CreateGlobalJavascriptObject(WSLit("OMEGA")).ToObject();
+    myOmegaAPIObject.SetCustomMethod(WSLit("queueCommand"), false);
     myOmegaAPIObject.SetCustomMethod(WSLit("setFrameFunction"), false);
 }
 
@@ -258,9 +265,12 @@ void TileWebRenderPass::updateOmegaContext(const DrawContext& context)
         jsar.Push(JSValue(ar.width()));
         jsar.Push(JSValue(ar.height()));
 
+        Camera* c = context.camera;
+        Vector3f cameraEyePosition = c->convertLocalToWorldPosition(c->getHeadOffset());
+
         myOmegaContext.SetProperty(WSLit("activeCanvasRect"), jsacr);
         myOmegaContext.SetProperty(WSLit("activeRect"), jsar);
-        myOmegaContext.SetProperty(WSLit("cameraPosition"), Vector3fToJSArray(context.camera->getPosition()));
+        myOmegaContext.SetProperty(WSLit("cameraPosition"), Vector3fToJSArray(cameraEyePosition));
         myOmegaContext.SetProperty(WSLit("tileTopLeft"), Vector3fToJSArray(context.tile->topLeft));
         myOmegaContext.SetProperty(WSLit("tileBottomLeft"), Vector3fToJSArray(context.tile->bottomLeft));
         myOmegaContext.SetProperty(WSLit("tileBottomRight"), Vector3fToJSArray(context.tile->bottomRight));
