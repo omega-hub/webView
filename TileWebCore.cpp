@@ -4,6 +4,10 @@
 
 #include <omega/glheaders.h>
 
+#ifndef OMEGA_VERSION
+#include <version.h>
+#endif
+
 TileWebCore* stwcInstance = NULL;
 
 using namespace Awesomium;
