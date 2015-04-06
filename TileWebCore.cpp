@@ -374,7 +374,9 @@ void TileWebRenderPass::render(Renderer* client, const DrawContext& context)
                     if(myTexture == NULL)
                     {
                         myTexture = context.renderer->createTexture();
-                        myTexture->initialize(vpsize[0], vpsize[1], GL_RGBA);
+                        myTexture->initialize(vpsize[0], vpsize[1], 
+                            Texture::Type2D,
+                            Texture::ChannelRGBA);
                     }
                     const unsigned char* pixels = surface->buffer();
                     int w = surface->width();
