@@ -25,7 +25,7 @@ endif()
 file(INSTALL DESTINATION ${PACKAGE_DIR}/examples/webView
     TYPE DIRECTORY
     FILES
-        ${SOURCE_DIR}/modules/webView/examples
+        ${SOURCE_DIR}/modules/webView/examples/
     )
 
 file(INSTALL DESTINATION ${PACKAGE_DIR}/modules/webView
