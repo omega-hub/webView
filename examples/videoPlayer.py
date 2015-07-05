@@ -9,7 +9,7 @@ ui = UiModule.createAndInitialize()
 uiroot = ui.getUi()
 	
 ww = WebView.create(width, height)
-ww.loadUrl('asset://local/webView/examples/video.html')
+ww.loadUrl('asset://local/video.html')
 
 movieFrame = Container.create(ContainerLayout.LayoutFree, uiroot)
 frame = Image.create(movieFrame)

@@ -1,4 +1,4 @@
-module_version(1.2)
+module_version(1.2.1)
 
 # Extract and setup the Awesomium library
 set(WEBVIEW_BIN_DIR ${CMAKE_BINARY_DIR}/modules/webView)
