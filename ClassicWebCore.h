@@ -10,6 +10,9 @@
 #include <Awesomium/WebCore.h>
 #include <Awesomium/WebView.h>
 #include <Awesomium/JSObject.h>
+#include <Awesomium/WebViewListener.h>
+
+#include "LocalDataSource.h"
 
 using namespace omega;
 using namespace omegaToolkit;
@@ -33,6 +36,7 @@ public:
     virtual void update(const UpdateContext& context);
 
 private:
+    LocalDataSource* myDataSource;
     Awesomium::WebCore* myCore;
     Awesomium::WebSession* mySession;
     List<WebView*> myViews;

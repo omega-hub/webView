@@ -1,5 +1,7 @@
 #include "ClassicWebCore.h"
 
+#include<Awesomium/STLHelpers.h>
+
 ClassicWebCore* sInstance = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,6 +28,10 @@ ClassicWebCore::ClassicWebCore()
     wp.enable_web_gl = true;
     wp.enable_gpu_acceleration = true;
     mySession = myCore->CreateWebSession(Awesomium::WebString((wchar16*)(L"")), wp);
+
+    // Register the local data source with this session.
+    myDataSource = new LocalDataSource();
+    mySession->AddDataSource(Awesomium::WSLit("local"), myDataSource);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,7 +93,7 @@ PixelData(PixelData::FormatRgba, width, height, 0),
 ///////////////////////////////////////////////////////////////////////////////
 WebView::~WebView()
 {
-    sInstance->destroyView(this);
+    if(sInstance != NULL) sInstance->destroyView(this);
     myView = NULL;
 }
 

@@ -29,6 +29,7 @@ void LocalDataSource::OnRequest(int request_id, const Awesomium::ResourceRequest
 
     if(ext == "html" || ext == "htm") mime = "text/html";
     else if(ext == "css") mime = "text/css";
+    else if(ext == "webm") mime = "video/webm";
     else if(ext == "jpeg" || ext == "jpg") mime = "image/jpeg";
     else if(ext == "gif") mime = "image/gif";
     else if(ext == "png") mime = "image/png";
